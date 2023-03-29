@@ -15,6 +15,7 @@ class CustomVideoPlayer extends StatefulWidget {
 
 class _CustomVideoPlayerState extends State<CustomVideoPlayer> {
   VideoPlayerController? videoController;
+  Duration currentPosition = Duration();
 
   @override
   void initState() {
@@ -27,6 +28,14 @@ class _CustomVideoPlayerState extends State<CustomVideoPlayer> {
       File(widget.video.path),
     );
     await videoController!.initialize();
+
+    videoController!.addListener(() {
+      final currentPosition = videoController!.value.position;
+
+      setState(() {
+        this.currentPosition = currentPosition;
+      });
+    });
 
     setState(() {});
   }
@@ -48,49 +57,48 @@ class _CustomVideoPlayerState extends State<CustomVideoPlayer> {
               onForwardPressed: onForwardPressed,
               isPlaying: videoController!.value.isPlaying,
             ),
-            Positioned(
-              right: 0,
-              child: IconButton(
-                  onPressed: () {},
-                  iconSize: 30.0,
-                  color: Colors.white,
-                  icon: Icon(Icons.photo_camera_back)),
-            )
+            _NewVideo(
+              onPressed: onNewVideoPressed,
+            ),
+
           ],
         ),
       ),
     );
   }
 
-  void onReversePressed(){
+  void onNewVideoPressed() {}
+
+  void onReversePressed() {
     final currentPosition = videoController!.value.position;
 
     Duration position = Duration();
 
-    if(currentPosition.inSeconds>3){
+    if (currentPosition.inSeconds > 3) {
       position = currentPosition - Duration(seconds: 3);
     }
 
     videoController!.seekTo(position);
   }
 
-  void onForwardPressed(){
+  void onForwardPressed() {
     final maxPosition = videoController!.value.duration;
     final currentPosition = videoController!.value.position;
 
     Duration position = maxPosition;
-    if((maxPosition - Duration(seconds: 3)).inSeconds > currentPosition.inSeconds) {
+    if ((maxPosition - Duration(seconds: 3)).inSeconds >
+        currentPosition.inSeconds) {
       position = currentPosition + Duration(seconds: 3);
     }
 
     videoController!.seekTo(position);
   }
 
-  void onPlayPressed(){
+  void onPlayPressed() {
     // 이미 실행중이면 중지
     // 실행중이 아니면 실행
     setState(() {
-      if(videoController!.value.isPlaying){
+      if (videoController!.value.isPlaying) {
         videoController!.pause();
       } else {
         videoController!.play();
@@ -150,3 +158,25 @@ class _Controls extends StatelessWidget {
     );
   }
 }
+
+class _NewVideo extends StatelessWidget {
+  final VoidCallback onPressed;
+
+  const _NewVideo({
+    required this.onPressed,
+    Key? key,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Positioned(
+      right: 0,
+      child: IconButton(
+          onPressed: () {},
+          iconSize: 30.0,
+          color: Colors.white,
+          icon: Icon(Icons.photo_camera_back)),
+    );
+  }
+}
+
